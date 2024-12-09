@@ -5,6 +5,11 @@ const double defaultMargin = 24;
 Color mainColor = "FFC700".toColor();
 Color greyColor = "8D92A3".toColor();
 
+Widget loadingIndicator = SpinKitFadingCircle(
+  size: 45,
+  color: mainColor,
+);
+
 TextStyle greyFontStyle = GoogleFonts.poppins().copyWith(color: greyColor);
 TextStyle blackFontStyle1 = GoogleFonts.poppins().copyWith(
   color: Colors.black,

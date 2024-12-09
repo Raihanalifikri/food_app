@@ -1,16 +1,23 @@
 part of 'pages.dart';
 
 class MainPages extends StatefulWidget {
-  const MainPages({super.key});
+  const MainPages({super.key, this.InitialPage = 0});
 
+  final int InitialPage;
   @override
   State<MainPages> createState() => _MainPagesState();
 }
 
 class _MainPagesState extends State<MainPages> {
-
   int selectedPage = 0;
-  PageController pageController = PageController(initialPage: 0);
+  @override
+  void initState() {
+    super.initState();
+    selectedPage = widget.InitialPage;
+    pageController = PageController(initialPage: widget.InitialPage);
+  }
+
+  PageController pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,42 +30,35 @@ class _MainPagesState extends State<MainPages> {
           Container(
             color: 'FAFAFC'.toColor(),
           ),
-          SafeArea(child: PageView(
-            controller: pageController,
-            onPageChanged: (index) {
-              setState(() {
-              selectedPage = index;
-              });
-            },
-            children: [
-              Center(
-                child: FoodPage(
-
+          SafeArea(
+            child: PageView(
+              controller: pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  selectedPage = index;
+                });
+              },
+              children: [
+                Center(
+                  child: FoodPage(),
                 ),
-              ),
-              Center(
-                child: Text(
-                  'Screen 2',
-                  style: blackFontStyle1,
+                Center(
+                  child: OrderHistoryPage(),
                 ),
-              ),
-              Center(
-                child: Text(
-                  'Screen 3',
-                  style: blackFontStyle1,
+                Center(
+                  child: ProfilePage(),
                 ),
-              ),
-            ],
+              ],
             ),
-           ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomButtonNavbar(
-                onTap: (int index ) {
+                onTap: (int index) {
                   setState(() {
                     selectedPage = index;
                   });
-                  pageController.jumpToPage(index);
+                  pageController.jumpToPage(selectedPage);
                 },
                 selectedIndex: selectedPage),
           )

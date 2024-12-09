@@ -1,7 +1,15 @@
 part of 'pages.dart';
 
 class AddressPages extends StatefulWidget {
-  const AddressPages({super.key});
+  const AddressPages(
+      {super.key,
+      required this.users,
+      required this.password,
+      required this.pictureFile});
+
+  final Users users;
+  final String password;
+  final File pictureFile;
 
   @override
   State<AddressPages> createState() => _AddressPagesState();
@@ -11,6 +19,17 @@ class _AddressPagesState extends State<AddressPages> {
   TextEditingController addressContorller = TextEditingController();
   TextEditingController phoneNumberContorller = TextEditingController();
   TextEditingController houseNumberContorller = TextEditingController();
+  bool isLoading = false;
+  List<String>? cities;
+  String? selectedCity;
+
+  @override
+  void initState() {
+    cities = ['cirebon', 'Bandung', 'Jakarta'];
+    selectedCity = cities![0];
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GeneralPage(
@@ -22,27 +41,7 @@ class _AddressPagesState extends State<AddressPages> {
       child: Column(
         children: [
           // Gambar
-          Container(
-            height: 110,
-            width: 110,
-            margin: EdgeInsets.only(top: 26),
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/photo_border.png'),
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image:
-                      NetworkImage('https://ui-avatars.com/api/?name=John+Doe'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
+
           // Address
           Container(
             width: double.infinity,
@@ -158,46 +157,112 @@ class _AddressPagesState extends State<AddressPages> {
               color: Colors.white,
               border: Border.all(color: Colors.black),
             ),
-            child:  DropdownButton(
-
-              items: [
-                DropdownMenuItem(
-                    child: Text("Bandung"),
-                  value: "Bandung",
-                ),
-                DropdownMenuItem(
-                  child: Text("Cirebon"),
-                  value: "Cirebon",
-                ),
-                DropdownMenuItem(
-                  child: Text("Palembang"),
-                  value: "Palembang",
-                ),
-                DropdownMenuItem(
-                  child: Text("Bekasi"),
-                  value: "Bekasi",
-                ),
-              ],
-              onChanged: (item) {},
-            isExpanded: true,
-            underline: SizedBox(),
+            child: DropdownButton(
+              value: selectedCity!,
+              items: cities!
+                  .map(
+                    (e) => DropdownMenuItem(
+                      child: Text(e),
+                      value: e,
+                    ),
+                  )
+                  .toList(),
+              onChanged: (item) {
+                setState(() {
+                  selectedCity = item;
+                });
+              },
+              isExpanded: true,
+              underline: SizedBox(),
             ),
           ),
           // Tombol
           Container(
-              width: double.infinity,
-              height: 45,
-              margin: EdgeInsets.only(top: 24),
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: mainColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      )
-                  ),
-                  onPressed: (){},
-                  child: Text("CONTINUE"))
+            width: double.infinity,
+            height: 45,
+            margin: EdgeInsets.only(top: 24),
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: (isLoading == true)
+                ? loadingIndicator
+                : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: mainColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        )),
+                    onPressed: () async {
+                      if (addressContorller.text == "" ||
+                          phoneNumberContorller.text == "" ||
+                          houseNumberContorller.text == "" ||
+                          selectedCity == null) {
+                        Get.snackbar(
+                          "",
+                          "",
+                          backgroundColor: "D9435E".toColor(),
+                          icon: Icon(
+                            MdiIcons.closeCircleOutline,
+                            color: Colors.white,
+                          ),
+                          titleText: Text(
+                            "Sign Up Failed",
+                            style: blackFontStyle1,
+                          ),
+                          messageText: Text(
+                            "Please fill all the fields",
+                            style: blackFontStyle3,
+                          ),
+                        );
+                      } else {
+                        Users users = widget.users.copyWith(
+                            address: addressContorller.text,
+                            phoneNumber: phoneNumberContorller.text,
+                            houseNumber: houseNumberContorller.text,
+                            city: selectedCity);
+
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        await context.read<UserCubit>().singUp(
+                            users, widget.password,
+                            pictureFile: widget.pictureFile);
+
+                        UserState state = context.read<UserCubit>().state;
+
+                        if (state is UserLoaded) {
+                          context.read<FoodCubit>().getFoods();
+                          context.read<TransactionCubit>().getTransaction();
+                          Get.to(() => SuccessSingupPages());
+                        } else {
+                          Get.snackbar(
+                            "",
+                            "",
+                            backgroundColor: "D9435E".toColor(),
+                            icon: Icon(
+                              MdiIcons.closeCircleOutline,
+                              color: Colors.white,
+                            ),
+                            titleText: Text(
+                              "Sign In Failed",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            messageText: Text(
+                              "Please Try Again Later",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      }
+                    },
+                    child: Text("CONTINUE")),
           ),
         ],
       ),

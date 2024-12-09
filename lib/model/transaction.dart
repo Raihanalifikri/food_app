@@ -10,6 +10,7 @@
     final DateTime? dateTime;
     final TransactionStatus? status;
     final Users? user;
+    final String? payment_url;
 
     Transaction(
         {this.id,
@@ -18,16 +19,19 @@
         this.total,
         this.dateTime,
         this.status,
-        this.user});
+        this.user,
+          this.payment_url
+
+        });
 
     Transaction copyWith({
-      required int id,
-      required Food food,
-      required int quantity,
-      required int total,
-      required DateTime dateTime,
-      required TransactionStatus status,
-      required Users user
+       int? id,
+       Food? food,
+       int? quantity,
+       int? total,
+       DateTime? dateTime,
+       TransactionStatus? status,
+       Users? user
   }) {
       return Transaction(
         id: id ?? this.id,
@@ -39,6 +43,24 @@
         user: user ?? this.user,
       );
     }
+
+    factory Transaction.fromJson(Map<String, dynamic> data) => Transaction(
+        id: data['id'],
+        food: Food.fromJson(data['food']),
+        quantity: data['quantity'],
+        total: data['total'],
+        dateTime: DateTime.fromMillisecondsSinceEpoch(data['created_at']),
+        user: Users.fromJson(data['user']),
+        payment_url: data['payment_url'],
+        status: data['status'] == 'PENDING'
+            ? TransactionStatus.pending
+            : data['status'] == 'ON_DELIVERY'
+            ? TransactionStatus.on_delivery
+            : data['status'] == 'CANCELED'
+            ? TransactionStatus.cancel
+            : TransactionStatus.delivered);
+
+
     @override
     // TODO: implement props
     List<Object?> get props =>
@@ -61,7 +83,7 @@
         quantity: 6,
         total: (mockFoods[2].price! * 6 * 1.1).toInt(),
         dateTime: DateTime.now(),
-        status: TransactionStatus.delivered,
+        status: TransactionStatus.on_delivery,
         user: mockUser
     ),
     Transaction(
@@ -70,7 +92,16 @@
         quantity: 4,
         total: (mockFoods[3].price! * 4 * 1.1).toInt(),
         dateTime: DateTime.now(),
-        status: TransactionStatus.delivered,
+        status: TransactionStatus.pending,
+        user: mockUser
+    ),
+    Transaction(
+        id: 4,
+        food: mockFoods[5],
+        quantity: 4,
+        total: (mockFoods[5].price! * 4 * 1.1).toInt(),
+        dateTime: DateTime.now(),
+        status: TransactionStatus.cancel,
         user: mockUser
     ),
   ];

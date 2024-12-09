@@ -2,10 +2,10 @@ part of 'pages.dart';
 
 class DetailPages extends StatefulWidget {
   const DetailPages(
-      {super.key, required this.onBackButtonPressed, required this.food});
+      {super.key, required this.onBackButtonPressed, this.transaction});
 
   final Function onBackButtonPressed;
-  final Food food;
+  final Transaction? transaction;
 
   @override
   State<DetailPages> createState() => _DetailPagesState();
@@ -34,8 +34,8 @@ class _DetailPagesState extends State<DetailPages> {
               height: 300,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(widget.food?.picturePath ??
-                      'https://ui-avatars.com/api/?name=${widget.food!.name}'),
+                  image: NetworkImage(widget.transaction?.food?.picturePath ??
+                      'https://ui-avatars.com/api/?name=${widget.transaction?.food?.name}'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -90,7 +90,7 @@ class _DetailPagesState extends State<DetailPages> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${widget.food.name}',
+                                '${widget.transaction?.food?.name}',
                                 style: blackFontStyle2,
                                 maxLines: 1,
                               ),
@@ -98,7 +98,7 @@ class _DetailPagesState extends State<DetailPages> {
                                 width: 24,
                               ),
                               RetingStars(
-                                rate: widget.food.rate,
+                                rate: widget.transaction?.food?.rate,
                               )
                             ],
                           ),
@@ -165,7 +165,7 @@ class _DetailPagesState extends State<DetailPages> {
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              widget.food!.description!,
+                              widget.transaction?.food?.description! ?? "",
                               style: blackFontStyle3,
                               textAlign: TextAlign.justify,
                             ),
@@ -192,7 +192,8 @@ class _DetailPagesState extends State<DetailPages> {
                       ),
                       Container(
                         margin: EdgeInsets.fromLTRB(0, 4, 0, 16),
-                        child: Text(widget.food!.ingredients!),
+                        child:
+                            Text(widget.transaction?.food!.ingredients! ?? ""),
                       ),
                       //   Price
                       Container(
@@ -209,14 +210,22 @@ class _DetailPagesState extends State<DetailPages> {
                                       fontSize: 17,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Icon(Icons.monetization_on, color: mainColor, size: 20,)
+                                Icon(
+                                  Icons.monetization_on,
+                                  color: mainColor,
+                                  size: 20,
+                                )
                               ],
                             ),
                             Text(
                               NumberFormat.currency(
-                                  symbol: 'IDR ',
-                                  decimalDigits: 0,
-                                  locale: 'id_ID').format(quantity * widget.food!.price!,),
+                                      symbol: 'IDR ',
+                                      decimalDigits: 0,
+                                      locale: 'id_ID')
+                                  .format(quantity *
+                                      (widget.transaction?.food?.price
+                                              ?.toInt() ??
+                                          0)),
                             ),
                           ],
                         ),
@@ -231,14 +240,26 @@ class _DetailPagesState extends State<DetailPages> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: mainColor,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)
-                            ),
+                                borderRadius: BorderRadius.circular(15)),
                           ),
-                          onPressed: (){},
-                          child: Text('Order Now', style: blackFontStyle3.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900
-                          ),),
+                          onPressed: () {
+                            Get.to(
+                              PaymentPage(
+                                  transaction: widget.transaction!.copyWith(
+                                    quantity: quantity,
+                                    total: quantity *
+                                        (widget.transaction?.food?.price?.toInt() ??
+                                            0),
+                                  ),
+                              )
+                            );
+                          },
+                          child: Text(
+                            'Order Now',
+                            style: blackFontStyle3.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900),
+                          ),
                         ),
                       ),
                     ],
